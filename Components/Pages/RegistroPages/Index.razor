@@ -1,5 +1,83 @@
-﻿<h3>Index</h3>
+﻿@page "/Registro/Index"
+
+<PageTitle>Consulta de...</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-center align-items-center p-3">
+            <h4 class="card-title mb-0">Consulta de ...</h4>
+        </div>
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-3">
+                    <label class="col-form-label"><strong>Filtrar por</strong></label>
+                </div>
+                <div class="col text-end">
+                    <a href="/Create" class="btn btn-success">
+                        <span class="bi bi-plus-square"></span> Crear
+                    </a>
+                </div>
+            </div>
+
+            <div class="row align-items-center mb-3">
+                <div class="col-3">
+                    <InputSelect class="form-select" @bind-Value="filtro">
+                        <option value="Id">Id</option>
+                        <option value="Nombre">Nombre</option>
+                    </InputSelect>
+                </div>
+                <div class="col-4">
+                    <div class="input-group">
+                        <input class="form-control"
+                               placeholder="Buscar" />
+                        <button type="button" class="btn btn-primary">
+                            <i class="bi bi-search me-1"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <div class="row mt-3">
+                        <div class="col-3 d-flex align-items-center mb-3"> 
+                            <label for="fechaDesde" class="form-label me-2"><strong>Desde</strong></label> 
+                            <input class="form-control" id="fechaDesde" /> 
+                        </div>
+
+                        <div class="col-3 d-flex align-items-center mb-3">
+                            <label for="fechaHasta" class="form-label me-2"><strong>Hasta</strong></label>
+                            <input class="form-control" id="fechaHasta" />
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <table class="table table-hover">
+                <thead class="table table-striped text-black">
+                    <tr>
+                        <th>Id</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+
+            <div class="row d-flex justify-content-between">
+                <div class="col-auto">
+                    <label class="form-label">Conteo</label>
+                    <input class="form-control" readonly/>
+                </div>
+
+                <div class="col-auto">
+                    <label class="form-label">Total</label>
+                    <input class="form-control" readonly />
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 @code {
-    
+    public string filtro { get; set; } = "Id";
 }
