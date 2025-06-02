@@ -1,10 +1,20 @@
+using Blazored.Toast;
+using Microsoft.EntityFrameworkCore;
 using Ramon_Lopez_AP1_P1.Components;
+using Ramon_Lopez_AP1_P1.Dal;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddBlazoredToast();
+
+var ConStr = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContextFactory<Contexto>(options =>
+    options.UseNpgsql(ConStr));
 
 var app = builder.Build();
 
