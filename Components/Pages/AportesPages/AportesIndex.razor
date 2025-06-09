@@ -1,11 +1,15 @@
 ﻿@page "/Aportes/Index"
+@using System.Linq.Expressions
+@inject AporteService aporteService
+@inject IToastService toastService
+@rendermode InteractiveServer
 
-<PageTitle>Consulta de...</PageTitle>
+<PageTitle>Consulta de Aportes</PageTitle>
 
 <div class="container">
     <div class="card shadow-lg">
         <div class="card-header d-flex justify-content-center align-items-center p-3">
-            <h4 class="card-title mb-0">Consulta de ...</h4>
+            <h4 class="card-title mb-0">Consulta de Aportes</h4>
         </div>
         <div class="card-body">
 
@@ -14,7 +18,7 @@
                     <label class="col-form-label"><strong>Filtrar por</strong></label>
                 </div>
                 <div class="col text-end">
-                    <a href="/Create" class="btn btn-success">
+                    <a href="/Aporte/Create" class="btn btn-success">
                         <span class="bi bi-plus-square"></span> Crear
                     </a>
                 </div>
@@ -22,7 +26,7 @@
 
             <div class="row align-items-center mb-3">
                 <div class="col-3">
-                    <InputSelect class="form-select" @bind-Value="filtro">
+                    <InputSelect class="form-select" @bind-Value="filtro" @onchange="Ordenar">
                         <option value="Id">Id</option>
                         <option value="Nombre">Nombre</option>
                     </InputSelect>
@@ -30,7 +34,7 @@
                 <div class="col-4">
                     <div class="input-group">
                         <input class="form-control"
-                               placeholder="Buscar" />
+                               placeholder="Buscar" @onclick="Buscar" />
                         <button type="button" class="btn btn-primary">
                             <i class="bi bi-search me-1"></i> Buscar
                         </button>
@@ -38,14 +42,14 @@
                 </div>
                 <div>
                     <div class="row mt-3">
-                        <div class="col-3 d-flex align-items-center mb-3"> 
-                            <label for="fechaDesde" class="form-label me-2"><strong>Desde</strong></label> 
-                            <input class="form-control" id="fechaDesde" /> 
+                        <div class="col-3 d-flex align-items-center mb-3">
+                            <label for="fechaDesde" class="form-label me-2"><strong>Desde</strong></label>
+                            <InputDate class="form-control" id="fechaDesde" @bind-Value="fechaDesde" />
                         </div>
 
-                        <div class="col-3 d-flex align-items-center mb-3">
+                        <div class="col-3 d-flex align-items-center mb-3 ms-4">
                             <label for="fechaHasta" class="form-label me-2"><strong>Hasta</strong></label>
-                            <input class="form-control" id="fechaHasta" />
+                            <InputDate class="form-control" id="fechaHasta" @bind-Value="fechaHasta" />
                         </div>
                     </div>
 
@@ -56,21 +60,37 @@
                 <thead class="table table-striped text-black">
                     <tr>
                         <th>Id</th>
+                        <th>Nombre</th>
+                        <th>Fecha</th>
+                        <th>Monto</th>
+                        <th>Editar</th>
                     </tr>
                 </thead>
                 <tbody>
+                    @foreach (var aporte in aportes)
+                    {
+                        <tr>
+                            <td>@aporte.AporteId</td>
+                            <td>@aporte.Nombre</td>
+                            <td>@aporte.fecha.ToString("dd/MM/yyyy")</td>
+                            <td>@aporte.Monto.ToString("N2")</td>
+                            <td>
+                                <a href="/Aporte/Edit/@aporte.AporteId" class="btn btn-outline-primary bi bi-pencil-square" ></a>
+                            </td>
+                        </tr>
+                    }
                 </tbody>
             </table>
 
             <div class="row d-flex justify-content-between">
                 <div class="col-auto">
                     <label class="form-label">Conteo</label>
-                    <input class="form-control" readonly/>
+                    <input class="form-control" readonly  value="@conteo"/>
                 </div>
 
                 <div class="col-auto">
                     <label class="form-label">Total</label>
-                    <input class="form-control" readonly />
+                    <input class="form-control" readonly value="@total"/>
                 </div>
             </div>
 
@@ -79,6 +99,90 @@
 </div>
 
 @code {
-    public string filtro { get; set; } = "Id";
+
+    private List<Aportes> aportes = new List<Aportes>();
+    private string filtro = "Id";
+    private string ValorFiltro { get; set; } = string.Empty;
+
+    private decimal total = 0;
+    private int conteo = 0;
+
+    DateTime? fechaDesde { get; set; }
+    DateTime? fechaHasta { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        aportes = await aporteService.Listar(a => true);
+        StateHasChanged();
+        total = aportes.Sum(e => e.Monto);
+        conteo = aportes.Count;
+
+    }
+
+    public async Task Filtrar()
+    {
+        try
+        {
+            Expression<Func<Aportes, bool>> criterio = e => true;
+            if (!string.IsNullOrWhiteSpace(ValorFiltro))
+            {
+                if (filtro == "Nombre")
+                {
+                    string nombreFiltro = ValorFiltro.ToLower();
+                    criterio = e => e.Nombre != null && e.Nombre.ToLower().Contains(nombreFiltro);
+                }
+                else if (int.TryParse(ValorFiltro, out int id))
+                {
+                    criterio = e => e.AporteId == id;
+                }
+            }
+
+            var listaInicial = await aporteService.Listar(criterio);
+
+            IEnumerable<Aportes> listaFiltrada = listaInicial;
+
+            if (fechaDesde.HasValue)
+            {
+                DateTime desde = fechaDesde.Value.Date;
+                listaFiltrada = listaFiltrada.Where(e => e.fecha.Date >= desde);
+            }
+            if (fechaHasta.HasValue)
+            {
+                DateTime hasta = fechaHasta.Value.Date;
+                listaFiltrada = listaFiltrada.Where(e => e.fecha.Date <= hasta);
+            }
+
+            aportes = listaFiltrada.ToList();
+
+            aportes = filtro == "Nombre"
+             ? aportes.OrderBy(e => e.Nombre).ToList()
+             : aportes.OrderBy(e => e.AporteId).ToList();
+
+            conteo = aportes.Count;
+            total = aportes.Sum(e => e.Monto);
+
+
+        }
+        catch (Exception ex)
+        {
+            aportes = new List<Aportes>();
+            toastService.ShowError($"Error al filtrar: {ex.Message}");
+        }
+    }
+
+
+
+    public async Task Ordenar()
+    {
+        filtro = filtro == "Id" ? "Nombre" : "Id";
+        ValorFiltro = " ";
+        await Filtrar();
+    }
+
+    public async Task Buscar()
+    {
+        await Filtrar();
+        StateHasChanged();
+    }
 
 }
