@@ -53,7 +53,7 @@ public class AporteService(IDbContextFactory<Contexto> DbContext)
         return await contexto.Aportes.FirstOrDefaultAsync();
     }
 
-    public async Task<List<Aportes>> GetList(Expression<Func<Aportes, bool>> criterio)
+    public async Task<List<Aportes>> Listar(Expression<Func<Aportes, bool>> criterio)
     {
         await using var contexto = await DbContext.CreateDbContextAsync();
         return await contexto.Aportes.Where(criterio).ToListAsync();
