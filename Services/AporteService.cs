@@ -1,6 +1,6 @@
 ﻿namespace Ramon_Lopez_AP1_P1.Services;
 
-public class RegistroService
+public class AporteService
 {
 
 }
