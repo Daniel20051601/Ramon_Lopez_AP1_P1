@@ -1,5 +1,63 @@
-﻿<h3>Create</h3>
+﻿@page "/Aporte/Create"
+@rendermode InteractiveServer
+@inject AporteService aporteService
+@inject IToastService toastService
+
+<PageTitle>Crear Aporte</PageTitle>
+<EditForm Model="aporte" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header d-flex justify-content-center align-items-center p-3">
+                <h4 class="card-title">Crear Aporte</h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre</label>
+                    <InputText id="nombre" class="form-control" @bind-Value="aporte.Nombre" required />
+                    <ValidationMessage For="@(() => aporte.Nombre)" />
+                </div>
+                <div class="mb-3">
+                    <label for="monto" class="form-label">Monto</label>
+                    <InputNumber id="monto" class="form-control" @bind-Value="aporte.Monto" required />
+                    <ValidationMessage For="@(() => aporte.Monto)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="fecha" class="form-label">Fecha</label>
+                    <InputDate id="fecha" class="form-control" @bind-Value="aporte.fecha" />
+                </div>
+
+            </div>
+            <div class="card-footer text-center justify-content-center">
+                <div class="btn-group" role="group">
+                    <a href="/Aportes/Index" class="btn btn-secondary">Volver </a>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</EditForm>
 
 @code {
+    private Aportes aporte = new Aportes();
 
+    private async Task Guardar()
+    {
+        try
+        {
+            aporte.fecha = aporte.fecha.ToUniversalTime();
+
+
+            await aporteService.Guardar(aporte);
+            toastService.ShowSuccess("Aporte creado exitosamente.");
+            aporte = new Aportes();
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Error al crear el aporte: {ex.Message}");
+        }
+    }
 }
