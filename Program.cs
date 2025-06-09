@@ -2,6 +2,7 @@ using Blazored.Toast;
 using Microsoft.EntityFrameworkCore;
 using Ramon_Lopez_AP1_P1.Components;
 using Ramon_Lopez_AP1_P1.Dal;
+using Ramon_Lopez_AP1_P1.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,8 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddBlazoredToast();
+
+builder.Services.AddScoped<AporteService>();
 
 var ConStr = builder.Configuration.GetConnectionString("DefaultConnection");
 
