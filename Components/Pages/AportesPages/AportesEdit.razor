@@ -1,5 +1,120 @@
-﻿<h3>Edit</h3>
+﻿@page "/Aporte/Edit/{AporteId:int}"
+@rendermode InteractiveServer
+@inject AporteService aporteService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+
+<EditForm Model="aporte" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header d-flex justify-content-center align-items-center p-3">
+                <h4 class="card-title"></h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre</label>
+                    <InputText id="nombre"
+                               class="form-control"
+                               @bind-Value="aporte.Nombre"
+                               required />
+                    <ValidationMessage For="@(() => aporte.Nombre)" />
+                </div>
+                <div class="mb-3">
+                    <label for="monto" class="form-label">Monto</label>
+                    <InputNumber id="monto" class="form-control" @bind-Value="aporte.Monto" required />
+                    <ValidationMessage For="@(() => aporte.Monto)" />
+                </div>
+                <div class="mb-3">
+                    <label for="fecha" class="form-label">Fecha</label>
+                    <InputDate id="fecha" class="form-control" @bind-Value="aporte.fecha" />
+                </div>
+            </div>
+            <div class="card-footer text-center justify-content-center">
+                <div class="btn-group" role="group">
+                    <a href="/Aportes/Index" class="btn btn-secondary">Volver</a>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" class="btn btn-danger" @onclick="() => MostrarModal = true">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@if (MostrarModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-primary text-white text-center">
+                    <h5 class="modal-title">Eliminar Aporte</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @onclick="CerrarModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro de que desea eliminar este aporte?</p>
+                    <p><strong>Id: </strong>@aporte.AporteId</p>
+                    <p><strong>Nombre: </strong>@aporte.Nombre</p>
+                    <p><strong>Monto: </strong>@aporte.Monto.ToString("N2")</p>
+                    <p><strong>Fecha: </strong>@aporte.fecha.ToString("dd/MM/yyyy")</p>
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="CerrarModal">Cancelar</button>
+                <button type="button" class="btn btn-danger" @onclick="Eliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 
 @code {
+    [Parameter]
+    public int AporteId { get; set; }
+
+    private Aportes? aporte = new Aportes();
+
+    private bool MostrarModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        aporte = await aporteService.Buscar(AporteId);
+    }
+
+    private async Task Guardar()
+    {
+        try
+        {
+            aporte.fecha = aporte.fecha.ToUniversalTime();
+            await aporteService.Guardar(aporte);
+            toastService.ShowSuccess("Aporte actualizado exitosamente.");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Error al actualizar el aporte: {ex.Message}");
+        }
+    }
+
+    private async Task Eliminar()
+    {
+        try
+        {
+            await aporteService.Eliminar(aporte.AporteId);
+            toastService.ShowSuccess("Aporte eliminado exitosamente.");
+            MostrarModal = false;
+            NavigationManager.NavigateTo("/Aportes/Index");
+
+        }catch (Exception ex)
+        {
+            toastService.ShowError($"Error al eliminar el aporte: {ex.Message}");
+        }
+        
+    }
+
+    private void CerrarModal()
+    {
+        MostrarModal = false;
+        StateHasChanged();
+    }
 
 }
