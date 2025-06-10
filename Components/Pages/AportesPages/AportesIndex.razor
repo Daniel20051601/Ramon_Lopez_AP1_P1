@@ -27,15 +27,15 @@
             <div class="row align-items-center mb-3">
                 <div class="col-3">
                     <InputSelect class="form-select" @bind-Value="filtro" @onchange="Ordenar">
-                        <option value="Id">Id</option>
+                        <option value="Id">Aporte Id</option>
                         <option value="Nombre">Nombre</option>
                     </InputSelect>
                 </div>
                 <div class="col-4">
                     <div class="input-group">
                         <input class="form-control"
-                               placeholder="Buscar" @onclick="Buscar" />
-                        <button type="button" class="btn btn-primary">
+                               placeholder="Buscar" @bind-value="ValorFiltro" />
+                        <button type="button" class="btn btn-primary" @onclick="Buscar">
                             <i class="bi bi-search me-1"></i> Buscar
                         </button>
                     </div>
@@ -59,7 +59,7 @@
             <table class="table table-hover">
                 <thead class="table table-striped text-black">
                     <tr>
-                        <th>Id</th>
+                        <th>Aporte Id</th>
                         <th>Nombre</th>
                         <th>Fecha</th>
                         <th>Monto</th>
@@ -112,7 +112,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        aportes = await aporteService.Listar(a => true);
+        await Filtrar();
         StateHasChanged();
         total = aportes.Sum(e => e.Monto);
         conteo = aportes.Count;
@@ -129,11 +129,11 @@
                 if (filtro == "Nombre")
                 {
                     string nombreFiltro = ValorFiltro.ToLower();
-                    criterio = e => e.Nombre != null && e.Nombre.ToLower().Contains(nombreFiltro);
+                    criterio = a => a.Nombre != null && a.Nombre.ToLower().Contains(nombreFiltro);
                 }
                 else if (int.TryParse(ValorFiltro, out int id))
                 {
-                    criterio = e => e.AporteId == id;
+                    criterio = a => a.AporteId == id;
                 }
             }
 
@@ -169,8 +169,6 @@
             toastService.ShowError($"Error al filtrar: {ex.Message}");
         }
     }
-
-
 
     public async Task Ordenar()
     {
