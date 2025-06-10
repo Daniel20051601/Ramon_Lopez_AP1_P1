@@ -71,8 +71,8 @@
 @code {
     [Parameter]
     public int AporteId { get; set; }
-
     private Aportes? aporte = new Aportes();
+    private List<Aportes> aportes = new List<Aportes>();
 
     private bool MostrarModal = false;
 
@@ -83,6 +83,15 @@
 
     private async Task Guardar()
     {
+        aportes = await aporteService.Listar(a => true);
+        foreach (var e in aportes)
+        {
+            if (e.Nombre.ToLower() == aporte.Nombre.ToLower() && e.AporteId != aporte.AporteId)
+            {
+                toastService.ShowError("Ya existe un aporte con ese nombre.");
+                return;
+            }
+        }
         try
         {
             aporte.fecha = aporte.fecha.ToUniversalTime();
