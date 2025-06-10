@@ -50,7 +50,10 @@ public class AporteService(IDbContextFactory<Contexto> DbContext)
     public async Task<Aportes?> Buscar(int aporteId)
     {
         await using var contexto = await DbContext.CreateDbContextAsync();
-        return await contexto.Aportes.FirstOrDefaultAsync();
+        return await contexto.Aportes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.AporteId == aporteId);
+
     }
 
     public async Task<List<Aportes>> Listar(Expression<Func<Aportes, bool>> criterio)
